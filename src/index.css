@@ -1,0 +1,136 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+    --card: 222 40% 10%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 40% 10%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 245 82% 67%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 222 35% 15%;
+    --secondary-foreground: 210 40% 80%;
+    --muted: 222 35% 14%;
+    --muted-foreground: 210 20% 50%;
+    --accent: 245 82% 67%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 30% 16%;
+    --input: 222 30% 14%;
+    --ring: 245 82% 67%;
+    --radius: 0.75rem;
+    --surface: 222 38% 12%;
+    --surface-foreground: 210 30% 70%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    /* Prevent viewport scaling on Android */
+    touch-action: manipulation;
+    overflow: hidden;
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground font-inter;
+    overscroll-behavior: none;
+    overflow: hidden;
+    height: 100%;
+    /* Prevent pull-to-refresh on Android */
+    overscroll-behavior-y: contain;
+    /* Prevent text selection flash on Android */
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Allow text selection in input fields */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    user-select: text;
+  }
+
+  #root {
+    height: 100%;
+    overflow: hidden;
+  }
+}
+
+/* ==================
+   Scrollbar (WebView)
+   ================== */
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 4px; }
+
+/* ==================
+   Safe areas (Capacitor / Android)
+   ================== */
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+/* ==================
+   Keyboard handling
+   ================== */
+/* When the virtual keyboard is open, shrink the viewport */
+@supports (height: 100dvh) {
+  html, body, #root {
+    height: 100dvh;
+  }
+}
+
+/* ==================
+   Performance: disable animations for low-end devices
+   ================== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ==================
+   Utilities
+   ================== */
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Premium Effects */
+.glass { @apply bg-card/60 backdrop-blur-xl border border-white/10; }
+.glass-dark { @apply bg-black/40 backdrop-blur-2xl border border-white/5; }
+.bg-premium {
+  background: radial-gradient(circle at top left, hsl(245 82% 67% / 0.15), transparent),
+              radial-gradient(circle at bottom right, hsl(222 47% 15% / 0.1), transparent),
+              hsl(222 47% 7%);
+}
+.text-gradient { @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-blue-400; }
+.active-scale { @apply active:scale-95 transition-transform; }
+
+/* Touch feedback on interactive elements */
+button, a, [role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Overscroll containment for scrollable areas */
+.overscroll-contain {
+  overscroll-behavior: contain;
+}
