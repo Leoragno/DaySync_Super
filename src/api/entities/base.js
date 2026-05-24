@@ -14,13 +14,19 @@ import { dataCache } from '../cache';
 export function createEntity(table, options = {}) {
   const { defaultSort = 'created_at', defaultSortAsc = false } = options;
 
+  function requireClient() {
+    if (!supabase) throw new EntityError('Supabase non inizializzato', { message: 'Client non configurato. Controlla le variabili d\'ambiente.' });
+    return supabase;
+  }
+
   return {
     /**
      * List records with optional sort, limit, and filters.
      * Results are cached to persistent storage for offline/widget access.
      */
     async list({ sortBy, ascending, limit, filters } = {}) {
-      let query = supabase
+      const client = requireClient();
+      let query = client
         .from(table)
         .select('*')
         .order(sortBy || defaultSort, { ascending: ascending ?? defaultSortAsc });
@@ -64,7 +70,8 @@ export function createEntity(table, options = {}) {
      * Get a single record by ID.
      */
     async get(id) {
-      const { data, error } = await supabase
+      const client = requireClient();
+      const { data, error } = await client
         .from(table)
         .select('*')
         .eq('id', id)
@@ -79,7 +86,8 @@ export function createEntity(table, options = {}) {
      * Sanitizes empty strings to null for database compatibility.
      */
     async create(record) {
-      const { data: { user } } = await supabase.auth.getUser();
+      const client = requireClient();
+      const { data: { user } } = await client.auth.getUser();
       if (!user) throw new EntityError('Not authenticated', { message: 'User not logged in' });
 
       // Convert empty strings to null for database compatibility (e.g. for TIME/DATE columns)
@@ -88,7 +96,7 @@ export function createEntity(table, options = {}) {
         if (sanitized[key] === '') sanitized[key] = null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from(table)
         .insert({ ...sanitized, user_id: user.id })
         .select()
@@ -110,13 +118,14 @@ export function createEntity(table, options = {}) {
      * Update a record by ID.
      */
     async update(id, updates) {
+      const client = requireClient();
       // Convert empty strings to null
       const sanitized = { ...updates };
       for (const key in sanitized) {
         if (sanitized[key] === '') sanitized[key] = null;
       }
 
-      const { data, error } = await supabase
+      const { data, error } = await client
         .from(table)
         .update(sanitized)
         .eq('id', id)
@@ -142,7 +151,8 @@ export function createEntity(table, options = {}) {
      * Delete a record by ID.
      */
     async delete(id) {
-      const { error } = await supabase
+      const client = requireClient();
+      const { error } = await client
         .from(table)
         .delete()
         .eq('id', id);
