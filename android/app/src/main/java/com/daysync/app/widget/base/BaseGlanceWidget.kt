@@ -1,10 +1,10 @@
 package com.daysync.app.widget.base
 
 import android.content.Context
+import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
-import androidx.glance.appwidget.update
 import androidx.glance.appwidget.provideContent
 import androidx.glance.unit.ColorProvider
 import androidx.glance.text.Text
@@ -16,8 +16,8 @@ import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.padding
 import androidx.glance.layout.height
 import androidx.glance.layout.width
-import androidx.glance.layout.Arrangement
 import androidx.glance.layout.Alignment
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.daysync.app.data.AppRepository
@@ -36,7 +36,6 @@ import kotlinx.coroutines.launch
 abstract class BaseGlanceWidget<T>(
     private val repoFlow: StateFlow<T>
 ) : GlanceAppWidget() {
-    private val scope = CoroutineScope(Dispatchers.IO)
 
     /**
      * Subclass provides the UI for the current [data] snapshot.
@@ -44,16 +43,14 @@ abstract class BaseGlanceWidget<T>(
     @Composable
     abstract fun Content(context: Context, data: T)
 
-    override fun onUpdate(context: Context) {
-        scope.launch {
-            repoFlow.collectLatest { data ->
-                update(context) { Content(context, data) }
-            }
+    override suspend fun provideGlance(context: Context, id: GlanceId) {
+        provideContent {
+            // In a real app, you might want to use collectAsState or similar if you had a snapshot-based state.
+            // For simplicity in Glance 1.0.0, we just collect the first available or the current value.
+            // Note: Continuous collection inside provideContent is tricky in Glance.
+            // Usually we trigger updateAll/update from the receiver when data changes.
+            val data = repoFlow.value
+            Content(context, data)
         }
     }
-}
-
-// Helper extension to simplify widget updates
-private fun GlanceAppWidget.update(context: Context, content: @Composable () -> Unit) {
-    provideContent { content() }
 }

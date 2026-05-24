@@ -8,22 +8,25 @@ import androidx.glance.GlanceModifier
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.updateAll
+import androidx.glance.appwidget.provideContent
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.unit.dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
+import androidx.glance.layout.height
+import androidx.glance.layout.width
 import androidx.glance.background
+import androidx.glance.GlanceTheme
 import androidx.glance.layout.size
-import androidx.glance.action.ActionParameters
-import androidx.glance.action.actionRunCallback
 import androidx.glance.action.actionStartActivity
 import androidx.glance.action.clickable
-import androidx.glance.appwidget.state.GlanceStateDefinition
+import androidx.glance.action.actionParametersOf
 import androidx.glance.appwidget.state.getAppWidgetState
 import androidx.glance.appwidget.state.updateAppWidgetState
 import com.daysync.app.R
@@ -38,61 +41,67 @@ import java.time.format.DateTimeFormatter
  * It observes AppRepository.events StateFlow and updates the UI instantly.
  */
 class AgendaGlanceWidget : GlanceAppWidget() {
-    companion object {
-        // Simple state definition to store the last rendered list (optional)
-        private val STATE_DEFINITION = GlanceStateDefinition("agenda_state")
-    }
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        provideContent {
+            Content(context)
+        }
+    }
+
+    @Composable
+    private fun Content(context: Context) {
         // Get the latest events from the repository (already collected in StateFlow)
-        val events = AppRepository.events.first()
+        // In a real app we'd use collectAsState, but for Glance simplicity:
+        val events = AppRepository.events.value
         // Keep only the next three upcoming events
         val now = System.currentTimeMillis()
         val upcoming = events.filter { it.startTime >= now }.sortedBy { it.startTime }.take(3)
 
-        Column(modifier = GlanceModifier.fillMaxWidth().background(color = GlanceTheme.colors.surface)) {
+        Column(modifier = GlanceModifier.fillMaxWidth().background(GlanceTheme.colors.surface)) {
             Text(
                 text = "Agenda",
-                style = TextStyle(fontSize = 18.dp, color = GlanceTheme.colors.onSurface),
+                style = TextStyle(fontSize = 18.sp, color = GlanceTheme.colors.onSurface),
                 modifier = GlanceModifier.padding(8.dp)
             )
             Spacer(GlanceModifier.height(4.dp))
             if (upcoming.isEmpty()) {
                 Text(
                     text = "No upcoming events",
-                    style = TextStyle(fontSize = 14.dp, color = GlanceTheme.colors.onSurfaceVariant),
+                    style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.onSurfaceVariant),
                     modifier = GlanceModifier.padding(horizontal = 8.dp)
                 )
             } else {
                 upcoming.forEach { event ->
-                    EventRow(event)
+                    EventRow(context, event)
                 }
             }
         }
     }
 
     @Composable
-    private fun EventRow(event: com.daysync.app.data.model.EventEntity) {
+    private fun EventRow(context: Context, event: com.daysync.app.data.EventEntity) {
         val formatter = DateTimeFormatter.ofPattern("HH:mm")
             .withZone(ZoneId.systemDefault())
         Row(
             modifier = GlanceModifier.fillMaxWidth()
                 .padding(horizontal = 8.dp, vertical = 4.dp)
-                .clickable(actionStartActivity(eventDetailIntent(event.id)))
+                .clickable(actionStartActivity<com.daysync.app.MainActivity>(
+                    actionParametersOf()
+                ))
         ) {
             Text(
                 text = formatter.format(Instant.ofEpochMilli(event.startTime)),
-                style = TextStyle(fontSize = 14.dp, color = GlanceTheme.colors.primary)
+                style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.primary)
             )
             Spacer(GlanceModifier.width(8.dp))
             Text(
                 text = event.title,
-                style = TextStyle(fontSize = 14.dp, color = GlanceTheme.colors.onSurface)
+                style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.onSurface)
             )
         }
     }
 
-    private fun eventDetailIntent(eventId: Long) = android.content.Intent(context, com.daysync.app.ui.EventDetailActivity::class.java).apply {
+    private fun eventDetailIntent(context: Context, eventId: Long) = android.content.Intent(context, com.daysync.app.MainActivity::class.java).apply {
         putExtra("EVENT_ID", eventId)
         flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK
     }
