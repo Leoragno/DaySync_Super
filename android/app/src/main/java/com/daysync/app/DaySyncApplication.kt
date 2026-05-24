@@ -15,6 +15,6 @@ class DaySyncApplication : Application() {
             "daysync-db"
         ).fallbackToDestructiveMigration().build()
         // Initialise repository singleton
-        AppRepository.init(db)
+        AppRepository.init(this, db)
     }
 }

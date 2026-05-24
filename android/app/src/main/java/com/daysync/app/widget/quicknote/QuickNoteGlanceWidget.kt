@@ -11,10 +11,15 @@ import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.padding
+import androidx.glance.layout.height
+import androidx.glance.layout.width
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.unit.dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.glance.GlanceModifier
+import androidx.glance.appwidget.provideContent
 import com.daysync.app.data.AppRepository
 import com.daysync.app.data.NoteEntity
 import kotlinx.coroutines.flow.StateFlow
@@ -30,11 +35,11 @@ class QuickNoteGlanceWidget : GlanceAppWidget() {
 
     @Composable
     private fun Content(context: Context, notes: List<NoteEntity>) {
-        Column(modifier = androidx.glance.layout.GlanceModifier.fillMaxWidth().padding(8.dp)) {
-            Text(text = "Quick Notes", style = TextStyle(fontSize = 18.dp, color = ColorProvider(android.graphics.Color.BLACK)))
-            Spacer(androidx.glance.layout.GlanceModifier.height(4.dp))
+        Column(modifier = GlanceModifier.fillMaxWidth().padding(8.dp)) {
+            Text(text = "Quick Notes", style = TextStyle(fontSize = 18.sp, color = ColorProvider(android.graphics.Color.BLACK)))
+            Spacer(GlanceModifier.height(4.dp))
             if (notes.isEmpty()) {
-                Text(text = "No notes", style = TextStyle(fontSize = 14.dp, color = ColorProvider(android.graphics.Color.DKGRAY)))
+                Text(text = "No notes", style = TextStyle(fontSize = 14.sp, color = ColorProvider(android.graphics.Color.DKGRAY)))
             } else {
                 notes.forEach { note ->
                     NoteRow(context, note)
@@ -45,20 +50,22 @@ class QuickNoteGlanceWidget : GlanceAppWidget() {
 
     @Composable
     private fun NoteRow(context: Context, note: NoteEntity) {
-        Row(modifier = androidx.glance.layout.GlanceModifier.fillMaxWidth().padding(vertical = 2.dp)) {
+        Row(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 2.dp)) {
             // Title
-            Text(text = note.title, style = TextStyle(fontSize = 14.dp, color = ColorProvider(android.graphics.Color.BLACK)))
+            Text(text = note.title, style = TextStyle(fontSize = 14.sp, color = ColorProvider(android.graphics.Color.BLACK)))
             // If checklist present, show a simple indicator
             if (!note.checklistJson.isNullOrBlank()) {
-                Spacer(androidx.glance.layout.GlanceModifier.width(4.dp))
-                Text(text = "✓", style = TextStyle(fontSize = 14.dp, color = ColorProvider(android.graphics.Color.GREEN)))
+                Spacer(GlanceModifier.width(4.dp))
+                Text(text = "✓", style = TextStyle(fontSize = 14.sp, color = ColorProvider(android.graphics.Color.GREEN)))
             }
         }
     }
 
-    override suspend fun provideGlance(context: Context, id: androidx.glance.appwidget.GlanceId) {
-        val notes = notesFlow.first()
-        Content(context, notes)
+    override suspend fun provideGlance(context: Context, id: androidx.glance.GlanceId) {
+        provideContent {
+            val notes = notesFlow.value
+            Content(context, notes)
+        }
     }
 }
 

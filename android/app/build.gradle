@@ -50,6 +50,7 @@ dependencies {
     implementation compose_bom
     implementation 'androidx.compose.ui:ui'
     implementation 'androidx.compose.runtime:runtime'
+    implementation 'androidx.compose.material3:material3'
     
     // Room database
     def room_version = "2.6.1"

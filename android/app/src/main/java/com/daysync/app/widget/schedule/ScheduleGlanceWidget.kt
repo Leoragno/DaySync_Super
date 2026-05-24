@@ -15,7 +15,9 @@ import androidx.glance.layout.width
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import androidx.glance.unit.ColorProvider
-import androidx.glance.unit.dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.glance.GlanceTheme
 import com.daysync.app.data.AppRepository
 import com.daysync.app.widget.base.BaseGlanceWidget
 import kotlinx.coroutines.flow.StateFlow
@@ -29,11 +31,11 @@ class ScheduleGlanceWidget : BaseGlanceWidget<List<com.daysync.app.data.TaskEnti
         Column(modifier = GlanceModifier.fillMaxWidth().padding(8.dp)) {
             Text(
                 text = "Schedule",
-                style = TextStyle(fontSize = 18.dp, color = GlanceTheme.colors.onSurface)
+                style = TextStyle(fontSize = 18.sp, color = GlanceTheme.colors.onSurface)
             )
             Spacer(GlanceModifier.height(4.dp))
             if (data.isEmpty()) {
-                Text(text = "No tasks", style = TextStyle(fontSize = 14.dp, color = GlanceTheme.colors.onSurfaceVariant))
+                Text(text = "No tasks", style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.onSurfaceVariant))
             } else {
                 val upcoming = data.filter { !it.completed }.sortedBy { it.dueTime }.take(3)
                 upcoming.forEach { task ->
@@ -47,9 +49,9 @@ class ScheduleGlanceWidget : BaseGlanceWidget<List<com.daysync.app.data.TaskEnti
     private fun TaskRow(task: com.daysync.app.data.TaskEntity) {
         val formatter = DateTimeFormatter.ofPattern("HH:mm").withZone(ZoneId.systemDefault())
         Row(modifier = GlanceModifier.fillMaxWidth().padding(vertical = 2.dp)) {
-            Text(text = formatter.format(Instant.ofEpochMilli(task.dueTime)), style = TextStyle(fontSize = 14.dp, color = GlanceTheme.colors.primary))
+            Text(text = formatter.format(Instant.ofEpochMilli(task.dueTime)), style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.primary))
             Spacer(GlanceModifier.width(4.dp))
-            Text(text = task.title, style = TextStyle(fontSize = 14.dp, color = GlanceTheme.colors.onSurface))
+            Text(text = task.title, style = TextStyle(fontSize = 14.sp, color = GlanceTheme.colors.onSurface))
         }
     }
 }
